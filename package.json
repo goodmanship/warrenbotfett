@@ -1,0 +1,24 @@
+{
+  "name": "warrenbotfett",
+  "version": "1.0.0",
+  "description": "bitcoin hoarder",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/goodmanship/warrenbotfett.git"
+  },
+  "author": "rio goodman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/goodmanship/warrenbotfett/issues"
+  },
+  "homepage": "https://github.com/goodmanship/warrenbotfett#readme",
+  "dependencies": {
+    "gdax": "latest",
+    "mongodb": "latest"
+  }
+}
