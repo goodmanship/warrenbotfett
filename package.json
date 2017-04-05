@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/goodmanship/warrenbotfett#readme",
   "dependencies": {
+    "co": "latest",
     "gdax": "latest",
-    "mongodb": "latest"
+    "mongodb": "latest",
+    "technicalindicators": "latest"
   }
 }
