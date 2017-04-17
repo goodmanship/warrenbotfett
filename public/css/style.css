@@ -32,3 +32,25 @@ li.sell span {
 li.buy span {
   background-color: green;
 }
+
+button.action {
+  cursor: pointer;
+  width: 100px;
+  margin: 10px;
+  padding: 10px;
+  font-weight: bold;
+  color: white;
+  background-color: #2C3E50;
+  border-radius: 4px;
+  border: 1px solid #2C3E50;
+}
+
+button#sell {
+  background-color: #96281B;
+  border: 1px solid #96281B;
+}
+
+button#buy {
+  background-color: #26A65B;
+  border: 1px solid #26A65B;
+}

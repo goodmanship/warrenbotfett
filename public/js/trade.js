@@ -4,6 +4,7 @@ const endpoint = {
 }
 const buyOrderBook = document.querySelector('#buyOrders')
 const sellOrderBook = document.querySelector('#sellOrders')
+const title = document.querySelector('#mainTitle')
 
 function sellSort(x, y) {
   if (y.price < x.price) return -1
@@ -23,3 +24,8 @@ setInterval(() => {
     .then(blob => blob.json())
     .then(data => showBook(data))
 }, 1000)
+
+const buyButton = document.querySelector('button#buy')
+const sellButton = document.querySelector('button#sell')
+buyButton.addEventListener('click', (e) => title.innerHTML = 'buy!')
+sellButton.addEventListener('click', (e) => title.innerHTML = 'sell!')
