@@ -3,15 +3,22 @@ const config = require("./config")
 const express = require('express')
 const gdax = require('gdax')
 const orderbookSync = new gdax.OrderbookSync(['ETH-USD'])
+const player = require('play-sound')(opts = {})
 
 const app = express()
 
-// const ws = new gdax.WebsocketClient(['ETH-USD']);
+const ws = new gdax.WebsocketClient(['ETH-USD']);
 // const pc = new gdax.PublicClient('ETH-USD')
 // const mc = require('mongodb').MongoClient
 
-// const Bullish = require('technicalindicators').Bullish
-// const Bearish = require('technicalindicators').Bearish
+// Defaults to https://api.gdax.com if apiURI omitted
+const authedClient = new gdax.AuthenticatedClient(
+  config.apiKey,
+  config.apiSecret,
+  config.apiPassphrase,
+  config.apiURI
+)
+authedClient.getAccounts((err, r, data) => console.log(data))
 
 function sellSide(data) {
   return data['side'] == 'sell'
@@ -26,6 +33,26 @@ function getOrders(limit=100) {
   const asks = book.asks.slice(0, limit - 1)
   const bids = book.bids.slice(0, limit - 1)
   return asks.concat(bids)
+}
+
+function soundVol(size) {
+  let x = parseFloat(size)
+  if (x <= 5)
+    return 0.5
+  else
+    return Math.min((x/10).toFixed(2), 1)
+}
+
+function playAnotherOne() {
+  let sound
+  let data = app.trades.shift()
+  if (data.side == 'sell') {
+    sound = './public/sounds/tink.wav'
+  } else {
+    sound = './public/sounds/snare.wav'
+  }
+  app.audio.kill()
+  app.audio = player.play(sound, {afplay: ['-v', soundVol(data.size)]})
 }
 // mongo connection
 // let collection = db.collection('documents')
@@ -43,11 +70,15 @@ function getOrders(limit=100) {
 // const orderbookSync = new gdax.OrderbookSync()
 // setInterval(() => console.log(orderbookSync.book.state()), 1000)
 
-// ws.on('message', data => {
-//   console.log(data)
-  // col = app.db.collection('messages')
-  // col.insert(data, (err, r) => {
-  //   if (err) throw(err)
+app.audio = player.play('./public/sounds/kick.wav', {afplay: ['-v', 0.5]})
+app.trades = []
+ws.on('message', data => {
+  if (data.type == 'match') app.trades.push(data)
+})
+
+setInterval(() => {
+  if (app.trades.length > 0) playAnotherOne()
+}, 100)
 
 // Node config
 app.set('view engine', 'pug')
@@ -60,6 +91,12 @@ app.get('/', (req, res) => {
 
 app.get('/orderbook', (req, res) => {
   res.json(getOrders())
+})
+
+app.post('/allorder', (req, res) => {
+  const body = req.body
+  console.log(body)
+  res.sendStatus(200)
 })
 
 // start node server

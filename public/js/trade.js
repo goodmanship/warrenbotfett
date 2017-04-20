@@ -1,6 +1,7 @@
 console.log("i got this here")
 const endpoint = {
-  'orderbook': '/orderbook'
+  'orderbook': '/orderbook',
+  'allorder': '/allorder'
 }
 const buyOrderBook = document.querySelector('#buyOrders')
 const sellOrderBook = document.querySelector('#sellOrders')
@@ -19,6 +20,21 @@ function showBook(data) {
   sellOrderBook.innerHTML = sellOrderList
 }
 
+function placeOrder(side, size, price) {
+  fetch(
+    endpoint['allorder'],
+    {
+      method: 'POST',
+      body: { side, size, price }
+    }
+  )
+}
+
+function orderClick(e) {
+  e.preventDefault()
+  placeOrder(e.target.id, 'x', e.target.parentElement.querySelector('input').value)
+}
+
 setInterval(() => {
   fetch(endpoint['orderbook'])
     .then(blob => blob.json())
@@ -27,5 +43,5 @@ setInterval(() => {
 
 const buyButton = document.querySelector('button#buy')
 const sellButton = document.querySelector('button#sell')
-buyButton.addEventListener('click', (e) => title.innerHTML = 'buy!')
-sellButton.addEventListener('click', (e) => title.innerHTML = 'sell!')
+buyButton.addEventListener('click', orderClick)
+sellButton.addEventListener('click', orderClick)

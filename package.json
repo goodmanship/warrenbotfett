@@ -21,6 +21,7 @@
     "express": "latest",
     "gdax": "latest",
     "mongodb": "latest",
+    "play-sound": "latest",
     "pug": "latest",
     "technicalindicators": "latest"
   }
