@@ -2,8 +2,10 @@ const config = require("./config")
 
 const express = require('express')
 const gdax = require('gdax')
+const IncomingWebhook = require('@slack/client').IncomingWebhook
 const orderbookSync = new gdax.OrderbookSync(['ETH-USD'])
 const player = require('play-sound')(opts = {})
+const webhook = new IncomingWebhook(config['slackUrl'])
 
 const app = express()
 
@@ -19,6 +21,18 @@ const authedClient = new gdax.AuthenticatedClient(
   config.apiURI
 )
 authedClient.getAccounts((err, r, data) => console.log(data))
+
+function filledOrder(trade) {
+  authedClient.getOrders((err, r, data) => {
+    if (data == null) return false
+    let o = data.find(order => order.id == trade.maker_order_id)
+    if (o !== undefined) {
+      slack(trade, o)
+      app.audio.kill()
+      player.play('./public/sounds/kick.wav', {afplay: ['-v', 10]})
+    }
+  })
+}
 
 function sellSide(data) {
   return data['side'] == 'sell'
@@ -54,6 +68,19 @@ function playAnotherOne() {
   app.audio.kill()
   app.audio = player.play(sound, {afplay: ['-v', soundVol(data.size)]})
 }
+
+function slack(trade, order) {
+  let msg = trade.size == order.size ? 'complete fill.  ' : 'partial fill.  '
+  msg += `${order.side} ${trade.size} out of ${order.size} @ ${order.price}`
+  webhook.send(msg, (err, res) => {
+    if (err) {
+      console.log('Error: ', err)
+    } else {
+      console.log('Message sent: ', res)
+    }
+  })
+}
+
 // mongo connection
 // let collection = db.collection('documents')
 // mc.connect(config.mongoUrl, (err, db) => {
@@ -73,7 +100,10 @@ function playAnotherOne() {
 app.audio = player.play('./public/sounds/kick.wav', {afplay: ['-v', 0.5]})
 app.trades = []
 ws.on('message', data => {
-  if (data.type == 'match') app.trades.push(data)
+  if (data.type == 'match') {
+    app.trades.push(data)
+    filledOrder(data)
+  }
 })
 
 setInterval(() => {

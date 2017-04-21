@@ -23,6 +23,7 @@
     "mongodb": "latest",
     "play-sound": "latest",
     "pug": "latest",
+    "@slack/client": "latest",
     "technicalindicators": "latest"
   }
 }
