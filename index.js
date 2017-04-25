@@ -60,9 +60,9 @@ function playAnotherOne() {
   let sound
   let data = app.trades.shift()
   if (data.side == 'sell') {
-    sound = './public/sounds/tink.wav'
+    sound = './public/sounds/Tink.aiff'
   } else {
-    sound = './public/sounds/snare.wav'
+    sound = './public/sounds/Pop.aiff'
   }
   app.audio.kill()
   app.audio = player.play(sound, {afplay: ['-v', soundVol(data.size)]})
@@ -84,7 +84,7 @@ function playAnotherOne() {
 // const orderbookSync = new gdax.OrderbookSync()
 // setInterval(() => console.log(orderbookSync.book.state()), 1000)
 
-app.audio = player.play('./public/sounds/kick.wav', {afplay: ['-v', 0.5]})
+app.audio = player.play('./public/sounds/Submarine.aiff', {afplay: ['-v', 0.5]})
 app.trades = []
 ws.on('message', data => {
   if (data.type == 'match') {
@@ -95,7 +95,7 @@ ws.on('message', data => {
 
 setInterval(() => {
   if (app.trades.length > 0) playAnotherOne()
-}, 100)
+}, 80)
 
 // Node config
 app.set('view engine', 'pug')
