@@ -35,11 +35,11 @@ function orderClick(e) {
   placeOrder(e.target.id, 'x', e.target.parentElement.querySelector('input').value)
 }
 
-setInterval(() => {
-  fetch(endpoint['orderbook'])
-    .then(blob => blob.json())
-    .then(data => showBook(data))
-}, 1000)
+// setInterval(() => {
+//   fetch(endpoint['orderbook'])
+//     .then(blob => blob.json())
+//     .then(data => showBook(data))
+// }, 1000)
 
 const buyButton = document.querySelector('button#buy')
 const sellButton = document.querySelector('button#sell')

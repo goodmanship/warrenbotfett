@@ -7,6 +7,7 @@ const orderbookSync = new gdax.OrderbookSync(['ETH-USD'])
 const player = require('play-sound')(opts = {})
 
 const app = express()
+app.orders = []
 
 const ws = new gdax.WebsocketClient(['ETH-USD']);
 // const pc = new gdax.PublicClient('ETH-USD')
@@ -23,8 +24,13 @@ authedClient.getAccounts((err, r, data) => console.log(data))
 
 function filledOrder(trade) {
   authedClient.getOrders((err, r, data) => {
+    // if the order was filled, it wont be in the order list any more
+    const newOrders = data
+    data = app.orders
+    app.orders = newOrders
+
     if (data == null) return false
-    let o = data.find(order => order.id == trade.maker_order_id)
+    const o = data.find(order => order.id == trade.maker_order_id)
     if (o !== undefined) {
       slack.reportFill(trade, o)
       app.audio.kill()
@@ -53,16 +59,30 @@ function soundVol(size) {
   if (x <= 5)
     return 0.5
   else
-    return Math.min((x/10).toFixed(2), 1)
+    return Math.min((x/8).toFixed(2), 1)
 }
 
 function playAnotherOne() {
   let sound
   let data = app.trades.shift()
   if (data.side == 'sell') {
-    sound = './public/sounds/Tink.aiff'
+    if (data.size >= 1000)
+      sound = './public/sounds/Glass.aiff'
+    else if (data.size >= 100)
+      sound = './public/sounds/Ping.aiff'
+    else if (data.size >= 10)
+      sound = './public/sounds/Morse.aiff'
+    else
+      sound = './public/sounds/Tink.aiff'
   } else {
-    sound = './public/sounds/Pop.aiff'
+    if (data.size >= 1000)
+      sound = './public/sounds/Basso.aiff'
+    else if (data.size >= 100)
+      sound = './public/sounds/Bottle.aiff'
+    else if (data.size >= 10)
+      sound = './public/sounds/Frog.aiff'
+    else
+      sound = './public/sounds/Pop.aiff'
   }
   app.audio.kill()
   app.audio = player.play(sound, {afplay: ['-v', soundVol(data.size)]})
@@ -95,7 +115,7 @@ ws.on('message', data => {
 
 setInterval(() => {
   if (app.trades.length > 0) playAnotherOne()
-}, 80)
+}, 90)
 
 // Node config
 app.set('view engine', 'pug')
