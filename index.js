@@ -4,7 +4,9 @@ const slack = require('./lib/slack')
 const express = require('express')
 const gdax = require('gdax')
 const orderbookSync = new gdax.OrderbookSync(['ETH-USD'])
-const player = require('play-sound')(opts = {})
+
+const Afplay = require('afplay')
+const player = new Afplay
 
 const app = express()
 app.orders = []
@@ -34,7 +36,7 @@ function filledOrder(trade) {
     if (o !== undefined) {
       slack.reportFill(trade, o)
       app.audio.kill()
-      player.play('./public/sounds/kick.wav', {afplay: ['-v', 10]})
+      player.play('./public/sounds/kick.wav', {volume: 4})
     }
   })
 }
@@ -62,32 +64,72 @@ function soundVol(size) {
     return Math.min((x/8).toFixed(2), 1)
 }
 
-function playAnotherOne() {
-  let sound
-  let data = app.trades.shift()
-  if (data.side == 'sell') {
-    if (data.size >= 1000)
-      sound = './public/sounds/Glass.aiff'
-    else if (data.size >= 100)
-      sound = './public/sounds/Ping.aiff'
-    else if (data.size >= 10)
-      sound = './public/sounds/Morse.aiff'
-    else
-      sound = './public/sounds/Tink.aiff'
-  } else {
-    if (data.size >= 1000)
-      sound = './public/sounds/Basso.aiff'
-    else if (data.size >= 100)
-      sound = './public/sounds/Bottle.aiff'
-    else if (data.size >= 10)
-      sound = './public/sounds/Frog.aiff'
-    else
-      sound = './public/sounds/Pop.aiff'
+function playAnotherTen() {
+  let sum = 0
+  for (trade in app.trades.slice(0,10)) {
+    if (trade.side == 'sell') {
+      sum -= trade.size
+    } else {
+      sum += trade.size
+    }
   }
-  app.audio.kill()
-  app.audio = player.play(sound, {afplay: ['-v', soundVol(data.size)]})
+  app.trades = app.trades.slice(9)
+  let side = sum < 0 ? 'sell' : 'buy'
+  app.trades.unshift({side, size: sum})
+  playAnotherOne()
 }
 
+function playAnotherOne() {
+  let sound
+  let vol
+  let time
+  let data = app.trades.shift()
+  if (data.side == 'sell') {
+    if (data.size >= 1000) {
+      sound = './public/sounds/Glass.aiff'
+      vol = 5
+      time = 0.5
+    } else if (data.size >= 100) {
+      sound = './public/sounds/Ping.aiff'
+      vol = 3
+      time = 0.2
+    } else if (data.size >= 10) {
+      sound = './public/sounds/Morse.aiff'
+      vol = 2
+      time = 0.1
+    } else {
+      sound = './public/sounds/Tink.aiff'
+      vol = 1
+      time = 0.1
+    }
+  } else {
+    if (data.size >= 1000) {
+      sound = './public/sounds/Basso.aiff'
+      vol = 5
+      time = 0.5
+    } else if (data.size >= 100) {
+      sound = './public/sounds/Bottle.aiff'
+      vol = 3
+      time = 0.2
+    } else if (data.size >= 10) {
+      sound = './public/sounds/Frog.aiff'
+      vol = 2
+      time = 0.1
+    } else {
+      sound = './public/sounds/Pop.aiff'
+      vol = 1
+      time = 0.1
+    }
+  }
+  app.audio = player.play(sound, {volume: vol, time: time})
+  setTimeout(audioPoll, 50)
+}
+
+function audioPoll() {
+  // if (app.trades.length > 10) playAnotherTen()
+  if (app.trades.length > 0) playAnotherOne()
+  else setTimeout(audioPoll, 100)
+}
 // mongo connection
 // let collection = db.collection('documents')
 // mc.connect(config.mongoUrl, (err, db) => {
@@ -104,7 +146,7 @@ function playAnotherOne() {
 // const orderbookSync = new gdax.OrderbookSync()
 // setInterval(() => console.log(orderbookSync.book.state()), 1000)
 
-app.audio = player.play('./public/sounds/Submarine.aiff', {afplay: ['-v', 0.5]})
+app.audio = player.play('./public/sounds/Submarine.aiff', {volume: 1, time: 0.1}).then(audioPoll)
 app.trades = []
 ws.on('message', data => {
   if (data.type == 'match') {
@@ -112,10 +154,6 @@ ws.on('message', data => {
     filledOrder(data)
   }
 })
-
-setInterval(() => {
-  if (app.trades.length > 0) playAnotherOne()
-}, 90)
 
 // Node config
 app.set('view engine', 'pug')
