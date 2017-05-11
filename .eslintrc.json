@@ -9,6 +9,7 @@
     "no-unused-vars": 1
   },
   "env": {
+    "browser": true,
     "jasmine": true
   }
 }
