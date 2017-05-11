@@ -35,7 +35,6 @@ function filledOrder(trade) {
     const o = data.find(order => order.id == trade.maker_order_id)
     if (o !== undefined) {
       slack.reportFill(trade, o)
-      app.audio.kill()
       player.play('./public/sounds/kick.wav', {volume: 4})
     }
   })
@@ -90,11 +89,11 @@ function playAnotherOne() {
       vol = 5
       time = 0.5
     } else if (data.size >= 100) {
-      sound = './public/sounds/Ping.aiff'
+      sound = './public/sounds/Morse.aiff'
       vol = 3
       time = 0.2
     } else if (data.size >= 10) {
-      sound = './public/sounds/Morse.aiff'
+      sound = './public/sounds/Frog.aiff'
       vol = 2
       time = 0.1
     } else {
@@ -112,7 +111,7 @@ function playAnotherOne() {
       vol = 3
       time = 0.2
     } else if (data.size >= 10) {
-      sound = './public/sounds/Frog.aiff'
+      sound = './public/sounds/Ping.aiff'
       vol = 2
       time = 0.1
     } else {
@@ -126,9 +125,11 @@ function playAnotherOne() {
 }
 
 function audioPoll() {
-  // if (app.trades.length > 10) playAnotherTen()
-  if (app.trades.length > 0) playAnotherOne()
-  else setTimeout(audioPoll, 100)
+  setTimeout(() => {
+    // if (app.trades.length > 10) playAnotherTen()
+    if (app.trades.length > 0) playAnotherOne()
+    else setTimeout(audioPoll, 100)
+  }, 5)
 }
 // mongo connection
 // let collection = db.collection('documents')

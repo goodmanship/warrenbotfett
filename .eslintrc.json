@@ -1,0 +1,14 @@
+{
+  "extends": "airbnb-base",
+  "plugins": [
+    "jasmine"
+  ],
+  "rules": {
+    "semi": [2, "never"],
+    "comma-dangle": [2, "never"],
+    "no-unused-vars": 1
+  },
+  "env": {
+    "jasmine": true
+  }
+}
