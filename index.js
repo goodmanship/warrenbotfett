@@ -18,13 +18,11 @@ const orderbookSync = new gdax.OrderbookSync(['ETH-USD'])
 const pc = new gdax.PublicClient('ETH-USD')
 const player = new Afplay()
 const ws = new gdax.WebsocketClient(['ETH-USD'])
-
 // const mc = require('mongodb').MongoClient
-// Defaults to https://api.gdax.com if apiURI omitted
 
 function filledOrder(trade) {
   authedClient.getOrders((err, r, data) => {
-    // if the order was filled, it wont be in the order list any more
+    // If the order was filled, it wont be in the order list any more
     const oldOrders = app.orders
     app.orders = data
 
@@ -96,7 +94,7 @@ function audioPoll() {
   }, 5)
 }
 
-// current balance
+// Current balance
 authedClient.getAccounts((err, r, data) => {
   pc.getProductTicker((err, r, eth) => {
     let total = 0.00
@@ -111,7 +109,7 @@ authedClient.getAccounts((err, r, data) => {
   })
 })
 
-// audio
+// Audio
 app.audio = player.play('./public/sounds/Submarine.aiff', { volume: 1, time: 0.1 }).then(audioPoll)
 app.trades = []
 ws.on('message', (data) => {
@@ -121,7 +119,7 @@ ws.on('message', (data) => {
   }
 })
 
-// Node config
+// Express config
 app.set('view engine', 'pug')
 app.use(express.static('public'))
 
@@ -140,7 +138,7 @@ app.post('/allorder', (req, res) => {
   res.sendStatus(200)
 })
 
-// start node server
+// Start Express server
 app.listen(3000, () => {
   logger.warn('dangerously high ROI detected')
 })
