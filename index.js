@@ -15,12 +15,10 @@ const authedClient = new gdax.AuthenticatedClient(
 )
 const logger = config.logger
 const orderbookSync = new gdax.OrderbookSync(['ETH-USD'])
+const pc = new gdax.PublicClient('ETH-USD')
 const player = new Afplay()
 const ws = new gdax.WebsocketClient(['ETH-USD'])
 
-authedClient.getAccounts((err, r, data) => logger.info(data))
-
-// const pc = new gdax.PublicClient('ETH-USD')
 // const mc = require('mongodb').MongoClient
 // Defaults to https://api.gdax.com if apiURI omitted
 
@@ -98,6 +96,22 @@ function audioPoll() {
   }, 5)
 }
 
+// current balance
+authedClient.getAccounts((err, r, data) => {
+  pc.getProductTicker((err, r, eth) => {
+    let total = 0.00
+    data.forEach((c) => {
+      if (c.currency === 'USD')
+        total += parseFloat(c.balance)
+      else if (c.currency === 'ETH')
+        total += parseFloat(c.balance)*parseFloat(eth.price)
+      logger.info(c.currency, ':', parseFloat(c.balance).toFixed(2))
+    })
+    logger.info('Total:', `$${total.toFixed(2)}`)
+  })
+})
+
+// audio
 app.audio = player.play('./public/sounds/Submarine.aiff', { volume: 1, time: 0.1 }).then(audioPoll)
 app.trades = []
 ws.on('message', (data) => {
@@ -128,5 +142,5 @@ app.post('/allorder', (req, res) => {
 
 // start node server
 app.listen(3000, () => {
-  logger.info('Warning: dangerously high ROI detected')
+  logger.warn('dangerously high ROI detected')
 })
