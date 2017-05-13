@@ -86,7 +86,7 @@ function audioPoll() {
         volume = 1
         time = 0.1
       }
-      app.audio = player.play(sound, { volume, time })
+      if (config.audio) app.audio = player.play(sound, { volume, time })
       setTimeout(audioPoll, 50)
     } else {
       setTimeout(audioPoll, 100)
@@ -110,11 +110,11 @@ authedClient.getAccounts((err, r, data) => {
 })
 
 // Audio
-app.audio = player.play('./public/sounds/Submarine.aiff', { volume: 1, time: 0.1 }).then(audioPoll)
+if (config.audio) app.audio = player.play('./public/sounds/Submarine.aiff', { volume: 1, time: 0.1 }).then(audioPoll)
 app.trades = []
 ws.on('message', (data) => {
   if (data.type === 'match') {
-    app.trades.push(data)
+    if (config.audio) app.trades.push(data)
     filledOrder(data)
   }
 })
